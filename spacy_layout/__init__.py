@@ -36,14 +36,17 @@ class spaCyLayout:
         result = self.converter.convert(path)
         inputs = []
         for item in result.document.texts:
-            prov = item.prov[0]
-            bounding_box = SpanLayout(
-                x=prov.bbox.l,
-                y=prov.bbox.t,
-                width=prov.bbox.r - prov.bbox.l,
-                height=prov.bbox.b - prov.bbox.t,
-                page_no=prov.page_no,
-            )
+            if item.prov:
+                prov = item.prov[0]
+                bounding_box = SpanLayout(
+                    x=prov.bbox.l,
+                    y=prov.bbox.t,
+                    width=prov.bbox.r - prov.bbox.l,
+                    height=prov.bbox.b - prov.bbox.t,
+                    page_no=prov.page_no,
+                )
+            else:
+                bounding_box = None
             inputs.append((item.text, item.label, bounding_box))
         doc = self._texts_to_doc(inputs)
         pages = [
@@ -64,6 +67,8 @@ class spaCyLayout:
         span_data = []
         token_idx = 0
         for item_text, label, layout in inputs:
+            if item_text == "":
+                continue
             # Tokenize the span because we can't rely on the document parsing to
             # give us items that are not split across token boundaries
             with self.nlp.select_pipes(disable=self.nlp.pipe_names):
