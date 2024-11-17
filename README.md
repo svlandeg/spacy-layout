@@ -4,9 +4,17 @@
 
 This plugin integrates with [Docling](https://ds4sd.github.io/docling/) to bring structured processing of **PDFs**, **Word documents** and other input formats to your [spaCy](https://spacy.io) pipeline. It outputs clean, **structured data** in a text-based format and outputs spaCy's familiar [`Doc`](https://spacy.io/api/doc) objects that let you accessed labelled text spans like setions, headings, or footnotes.
 
-This also makes it easy to apply powerful NLP techniques to your documents, including linguistic analysis, named entity recognition, text classification and more. The plugin also includes [Prodigy](https://prodi.gy) recipes for annotating the converted documents.
+This workflow also makes it easy to apply powerful **NLP techniques** to your documents, including linguistic analysis, named entity recognition, text classification and more. It's also great for implementing **chunking for RAG** pipelines.
+
+[![Tests](https://github.com/explosion/spacy-layout/actions/workflows/tests.yml/badge.svg)](https://github.com/explosion/spacy-layout/actions/workflows/tests.yml)
+[![Current Release Version](https://img.shields.io/github/release/explosion/spacy-layout.svg?style=flat-square&logo=github)](https://github.com/explosion/spacy-layout/releases)
+[![pypi Version](https://img.shields.io/pypi/v/spacy-layout.svg?style=flat-square&logo=pypi&logoColor=white)](https://pypi.org/project/spacy-layout/)
 
 ## 📝 Usage
+
+> ⚠️ This package requires **Python 3.10** or above.
+
+After initializing the `spaCyLayout` preprocessor with an `nlp` object for tokenization, you can call it on a document path to convert it to structured data. The resulting `Doc` object includes layout spans that map into the original raw text and expose various attributes, including the content type and layout features.
 
 ```python
 import spacy
@@ -31,6 +39,21 @@ for span in doc.spans["layout"]:
     print(span.label_)
     # Layout features of the section, including bounding box
     print(span._.layout)
+```
+
+After you've processed the documents, you can [serialize](https://spacy.io/usage/saving-loading#docs) the structured `Doc` objects in spaCy's efficient binary format, so you don't have to re-run the resource-intensive conversion.
+
+spaCy also allows you to call the `nlp` object on an already created `Doc`, so you can easily apply a pipeline of components for [linguistic analysis](https://spacy.io/usage/linguistic-features) or [named entity recognition](https://spacy.io/usage/linguistic-features#named-entities), use [rule-based matching](https://spacy.io/usage/rule-based-matching) or anything else you can do with spaCy.
+
+```python
+# Load the transformer-based English pipeline
+# Installation: python -m spacy download en_core_web_trf
+nlp = spacy.load("en_core_web_trf")
+layout = spaCyLayout(nlp)
+
+doc = layout("./starcraft.pdf")
+# Apply the pipeline to access POS tags, dependencies, entities etc.
+doc = nlp(doc)
 ```
 
 ## 🎛️ API
@@ -108,9 +131,3 @@ doc = layout("./starcraft.pdf")
 | --- | --- | --- |
 | `path` | `str` / `Path` | Path to document to process. |
 | **RETURNS** | `Doc` | The processed spaCy `Doc` object. |
-
-## ✨ Prodigy Recipes
-
-The package includes [Prodigy](https://prodi.gy) recipes for annotating the extracted data in a convenient text-based way, e.g. to add named entities and other span annotations or assign categories to the documents. You can also  use `spacy-layout` in your own [custom recipes](https://prodi.gy/docs/custom-recipes) to support PDFs and other documents as input to Prodigy. For more PDF workflows, see the [Prodigy-PDF](https://prodi.gy/plugins#pdf) plugin.
-
-> ⚠ **Coming soon**
