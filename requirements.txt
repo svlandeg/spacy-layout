@@ -1,0 +1,4 @@
+spacy>=3.8.2
+docling>=2.5.2
+# Dev requirements
+pytest
