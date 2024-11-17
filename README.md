@@ -6,7 +6,7 @@ This plugin integrates with [Docling](https://ds4sd.github.io/docling/) to bring
 
 This workflow also makes it easy to apply powerful **NLP techniques** to your documents, including linguistic analysis, named entity recognition, text classification and more. It's also great for implementing **chunking for RAG** pipelines.
 
-[![Tests](https://github.com/explosion/spacy-layout/actions/workflows/tests.yml/badge.svg)](https://github.com/explosion/spacy-layout/actions/workflows/tests.yml)
+[![Test](https://github.com/explosion/spacy-layout/actions/workflows/test.yml/badge.svg)](https://github.com/explosion/spacy-layout/actions/workflows/test.yml)
 [![Current Release Version](https://img.shields.io/github/release/explosion/spacy-layout.svg?style=flat-square&logo=github)](https://github.com/explosion/spacy-layout/releases)
 [![pypi Version](https://img.shields.io/pypi/v/spacy-layout.svg?style=flat-square&logo=pypi&logoColor=white)](https://pypi.org/project/spacy-layout/)
 
