@@ -34,9 +34,10 @@ def test_general(path, nlp, span_labels):
 
 
 @pytest.mark.parametrize("path", [PDF_SIMPLE, DOCX_SIMPLE])
-def test_simple(path, nlp):
-    layout = spaCyLayout(nlp)
+@pytest.mark.parametrize("separator", ["\n\n", ""])
+def test_simple(path, separator, nlp):
+    layout = spaCyLayout(nlp, separator=separator)
     doc = layout(path)
     assert len(doc.spans[layout.attrs.span_group]) == 4
-    assert doc.text.startswith("Lorem ipsum dolor sit amet\n\n")
+    assert doc.text.startswith(f"Lorem ipsum dolor sit amet{separator}")
     assert doc.spans[layout.attrs.span_group][0].text == "Lorem ipsum dolor sit amet"
