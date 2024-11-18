@@ -74,10 +74,12 @@ for span in doc.spans["layout"]:
 
 | Attribute | Type | Description |
 | --- | --- | --- |
-| `Span.label_` | `str` | The type of the extracted layout span, e.g. `"text"` or `"section_header"`. [See here](https://github.com/DS4SD/docling-core/blob/main/docling_core/types/doc/labels.py) for options.
-| `Span._.layout` | `SpanLayout` | Layout features of a layout span. |
 | `Doc._.layout` | `DocLayout` | Layout features of the document. |
 | `Doc._.pages` | `list[tuple[PageLayout, list[Span]]]` | Pages in the document and the spans they contain. |
+| `Doc.spans["layout"]` | `spacy.tokens.SpanGroup` | The layout spans in the document. |
+| `Span.label_` | `str` | The type of the extracted layout span, e.g. `"text"` or `"section_header"`. [See here](https://github.com/DS4SD/docling-core/blob/main/docling_core/types/doc/labels.py) for options. |
+| `Span.label` | `int` | The integer ID of the span label. |
+| `Span._.layout` | `SpanLayout` | Layout features of a layout span. |
 
 ### <kbd>dataclass</kbd> PageLayout
 
