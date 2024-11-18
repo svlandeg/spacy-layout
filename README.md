@@ -14,6 +14,10 @@ This workflow makes it easy to apply powerful **NLP techniques** to your documen
 
 > ⚠️ This package requires **Python 3.10** or above.
 
+```bash
+pip install spacy-layout
+```
+
 After initializing the `spaCyLayout` preprocessor with an `nlp` object for tokenization, you can call it on a document path to convert it to structured data. The resulting `Doc` object includes layout spans that map into the original raw text and expose various attributes, including the content type and layout features.
 
 ```python
