@@ -2,7 +2,7 @@
 
 # spaCy Layout: Process PDFs, Word documents and more with spaCy
 
-This plugin integrates with [Docling](https://ds4sd.github.io/docling/) to bring structured processing of **PDFs**, **Word documents** and other input formats to your [spaCy](https://spacy.io) pipeline. It outputs clean, **structured data** in a text-based format and outputs spaCy's familiar [`Doc`](https://spacy.io/api/doc) objects that let you accessed labelled text spans like sections, headings, or footnotes.
+This plugin integrates with [Docling](https://ds4sd.github.io/docling/) to bring structured processing of **PDFs**, **Word documents** and other input formats to your [spaCy](https://spacy.io) pipeline. It outputs clean, **structured data** in a text-based format and outputs spaCy's familiar [`Doc`](https://spacy.io/api/doc) objects that let you access labelled text spans like sections, headings, or footnotes.
 
 This workflow makes it easy to apply powerful **NLP techniques** to your documents, including linguistic analysis, named entity recognition, text classification and more. It's also great for implementing **chunking for RAG** pipelines.
 
