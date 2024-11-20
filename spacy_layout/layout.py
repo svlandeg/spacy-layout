@@ -1,7 +1,8 @@
+from io import BytesIO
 from pathlib import Path
 from typing import Iterable, Iterator
 
-from docling.datamodel.base_models import InputFormat
+from docling.datamodel.base_models import DocumentStream, InputFormat
 from docling.document_converter import ConversionResult, DocumentConverter, FormatOption
 from docling_core.types.doc.labels import DocItemLabel
 from spacy.language import Language
@@ -41,16 +42,22 @@ class spaCyLayout:
         Span.set_extension(self.attrs.span_layout, default=None, force=True)
         Span.set_extension(self.attrs.span_heading, getter=self.get_heading, force=True)
 
-    def __call__(self, path: str | Path) -> Doc:
+    def __call__(self, source: str | Path | bytes) -> Doc:
         """Call parser on a path to create a spaCy Doc object."""
-        result = self.converter.convert(path)
+        result = self.converter.convert(self._get_source(source))
         return self._result_to_doc(result)
 
-    def pipe(self, paths: Iterable[str | Path]) -> Iterator[Doc]:
+    def pipe(self, sources: Iterable[str | Path | bytes]) -> Iterator[Doc]:
         """Process multiple documents and create spaCy Doc objects."""
-        results = self.converter.convert_all(paths)
+        data = (self._get_source(source) for source in sources)
+        results = self.converter.convert_all(data)
         for result in results:
             yield self._result_to_doc(result)
+
+    def _get_source(self, source: str | Path | bytes) -> str | Path | DocumentStream:
+        if isinstance(source, (str, Path)):
+            return source
+        return DocumentStream(name="source", stream=BytesIO(source))
 
     def _result_to_doc(self, result: ConversionResult) -> Doc:
         inputs = []

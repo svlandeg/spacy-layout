@@ -149,7 +149,7 @@ doc = layout("./starcraft.pdf")
 
 | Argument | Type | Description |
 | --- | --- | --- |
-| `path` | `str \| Path` | Path of document to process. |
+| `source` | `str \| Path \| bytes` | Path of document to process or bytes. |
 | **RETURNS** | `Doc` | The processed spaCy `Doc` object. |
 
 #### <kbd>method</kbd> `spaCyLayout.pipe`
@@ -164,5 +164,5 @@ docs = layout.pipe(paths)
 
 | Argument | Type | Description |
 | --- | --- | --- |
-| `paths` | `Iterable[str \| Path]` | Paths of documents to process. |
+| `paths` | `Iterable[str \| Path \| bytes]` | Paths of documents to process or bytes. |
 | **YIELDS** | `Doc` | The processed spaCy `Doc` object. |
