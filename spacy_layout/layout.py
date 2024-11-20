@@ -1,7 +1,8 @@
 from pathlib import Path
+from typing import Iterable, Iterator
 
 from docling.datamodel.base_models import InputFormat
-from docling.document_converter import DocumentConverter, FormatOption
+from docling.document_converter import ConversionResult, DocumentConverter, FormatOption
 from docling_core.types.doc.labels import DocItemLabel
 from spacy.language import Language
 from spacy.tokens import Doc, Span, SpanGroup
@@ -43,6 +44,15 @@ class spaCyLayout:
     def __call__(self, path: str | Path) -> Doc:
         """Call parser on a path to create a spaCy Doc object."""
         result = self.converter.convert(path)
+        return self._result_to_doc(result)
+
+    def pipe(self, paths: Iterable[str | Path]) -> Iterator[Doc]:
+        """Process multiple documents and create spaCy Doc objects."""
+        results = self.converter.convert_all(paths)
+        for result in results:
+            yield self._result_to_doc(result)
+
+    def _result_to_doc(self, result: ConversionResult) -> Doc:
         inputs = []
         for item in result.document.texts:
             if item.text == "":

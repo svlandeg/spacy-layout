@@ -41,3 +41,9 @@ def test_simple(path, separator, nlp):
     assert len(doc.spans[layout.attrs.span_group]) == 4
     assert doc.text.startswith(f"Lorem ipsum dolor sit amet{separator}")
     assert doc.spans[layout.attrs.span_group][0].text == "Lorem ipsum dolor sit amet"
+
+
+def test_simple_pipe(nlp):
+    layout = spaCyLayout(nlp)
+    for doc in layout.pipe([PDF_SIMPLE, DOCX_SIMPLE]):
+        assert len(doc.spans[layout.attrs.span_group]) == 4
