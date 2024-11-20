@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Iterator
+from typing import Iterable, Iterator
 
 from docling.datamodel.base_models import InputFormat
 from docling.document_converter import ConversionResult, DocumentConverter, FormatOption
@@ -46,7 +46,7 @@ class spaCyLayout:
         result = self.converter.convert(path)
         return self._result_to_doc(result)
 
-    def pipe(self, paths: Iterator[str | Path]) -> Iterator[Doc]:
+    def pipe(self, paths: Iterable[str | Path]) -> Iterator[Doc]:
         """Process multiple documents and create spaCy Doc objects."""
         results = self.converter.convert_all(paths)
         for result in results:
