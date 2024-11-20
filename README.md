@@ -84,7 +84,7 @@ for span in doc.spans["layout"]:
 | `Span.label` | `int` | The integer ID of the span label. |
 | `Span.id` | `int` | Running index of layout span. |
 | `Span._.layout` | `SpanLayout` | Layout features of a layout span. |
-| `Span._.heading` | `Span` / `None` | Closest heading to a span, if available. |
+| `Span._.heading` | `Span \| None` | Closest heading to a span, if available. |
 
 ### <kbd>dataclass</kbd> PageLayout
 
@@ -141,5 +141,5 @@ doc = layout("./starcraft.pdf")
 
 | Argument | Type | Description |
 | --- | --- | --- |
-| `path` | `str` / `Path` | Path to document to process. |
+| `path` | `str \| Path` | Path of document to process. |
 | **RETURNS** | `Doc` | The processed spaCy `Doc` object. |
