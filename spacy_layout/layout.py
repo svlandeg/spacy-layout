@@ -87,21 +87,21 @@ class spaCyLayout:
         spaces = []
         span_data = []
         token_idx = 0
-        for item_text, label, layout in inputs:
-            # Tokenize the span because we can't rely on the document parsing to
-            # give us items that are not split across token boundaries
-            with self.nlp.select_pipes(disable=self.nlp.pipe_names):
-                span_doc = self.nlp(item_text)
-            words += [token.text for token in span_doc]
-            spaces += [bool(token.whitespace_) for token in span_doc]
-            # Add separator token and don't include it in the layout span
-            if self.sep:
-                words.append(self.sep)
-                spaces[-1] = False
-                spaces.append(False)
-            end = token_idx + len(span_doc)
-            span_data.append((token_idx, end, label, layout))
-            token_idx += len(span_doc) + (1 if self.sep else 0)
+        data = ((item_text, (label, layout)) for item_text, label, layout in inputs)
+        # Tokenize the span because we can't rely on the document parsing to
+        # give us items that are not split across token boundaries
+        with self.nlp.select_pipes(disable=self.nlp.pipe_names):
+            for span_doc, (label, layout) in self.nlp.pipe(data, as_tuples=True):
+                words += [token.text for token in span_doc]
+                spaces += [bool(token.whitespace_) for token in span_doc]
+                # Add separator token and don't include it in the layout span
+                if self.sep:
+                    words.append(self.sep)
+                    spaces[-1] = False
+                    spaces.append(False)
+                end = token_idx + len(span_doc)
+                span_data.append((token_idx, end, label, layout))
+                token_idx += len(span_doc) + (1 if self.sep else 0)
         doc = Doc(self.nlp.vocab, words=words, spaces=spaces)
         spans = []
         for i, (start, end, label, layout) in enumerate(span_data):
