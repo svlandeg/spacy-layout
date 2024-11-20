@@ -48,7 +48,7 @@ for span in doc.spans["layout"]:
     print(span._.heading)
 ```
 
-If you need to process larger volumes of documents at scale, you can use the `spaCyLayout.pipe` method, which takes an iterator of paths instead and yields `Doc` objects:
+If you need to process larger volumes of documents at scale, you can use the `spaCyLayout.pipe` method, which takes an iterable of paths or bytes instead and yields `Doc` objects:
 
 ```python
 paths = ["one.pdf", "two.pdf", "three.pdf", ...]
