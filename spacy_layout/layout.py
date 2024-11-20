@@ -4,6 +4,7 @@ from typing import Iterable, Iterator
 
 from docling.datamodel.base_models import DocumentStream, InputFormat
 from docling.document_converter import ConversionResult, DocumentConverter, FormatOption
+from docling_core.types.doc.base import CoordOrigin
 from docling_core.types.doc.labels import DocItemLabel
 from spacy.language import Language
 from spacy.tokens import Doc, Span, SpanGroup
@@ -61,31 +62,39 @@ class spaCyLayout:
 
     def _result_to_doc(self, result: ConversionResult) -> Doc:
         inputs = []
-        for item in result.document.texts:
-            if item.text == "":
-                continue
-            if item.prov:
-                prov = item.prov[0]
-                bounding_box = SpanLayout(
-                    x=prov.bbox.l,
-                    y=prov.bbox.t,
-                    width=prov.bbox.r - prov.bbox.l,
-                    height=prov.bbox.b - prov.bbox.t,
-                    page_no=prov.page_no,
-                )
-            else:
-                bounding_box = None
-            inputs.append((item.text, item.label, bounding_box))
-        doc = self._texts_to_doc(inputs)
-        pages = [
-            PageLayout(
-                page_no=i + 1,
+        pages = {
+            (page.page_no + 1): PageLayout(
+                page_no=page.page_no + 1,
                 width=page.size.width if page.size else 0,
                 height=page.size.height if page.size else 0,
             )
-            for i, page in enumerate(result.pages)
-        ]
-        doc._.set(self.attrs.doc_layout, DocLayout(pages=pages))
+            for page in result.pages
+        }
+        for item in result.document.texts:
+            if item.text == "":
+                continue
+            bounding_box = None
+            if item.prov:
+                prov = item.prov[0]
+                page = pages[prov.page_no]
+                if page.width and page.height:
+                    box = prov.bbox
+                    height = box.b - box.t
+                    y = (
+                        box.t
+                        if box.coord_origin == CoordOrigin.TOPLEFT
+                        else page.height - box.t - height
+                    )
+                    bounding_box = SpanLayout(
+                        x=box.l,
+                        y=y,
+                        width=box.r - box.l,
+                        height=height,
+                        page_no=prov.page_no,
+                    )
+            inputs.append((item.text, item.label, bounding_box))
+        doc = self._texts_to_doc(inputs)
+        doc._.set(self.attrs.doc_layout, DocLayout(pages=[p for p in pages.values()]))
         return doc
 
     def _texts_to_doc(self, inputs: list[tuple[str, str, SpanLayout]]) -> Doc:
