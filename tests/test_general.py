@@ -10,6 +10,7 @@ from spacy_layout.types import DocLayout, SpanLayout
 PDF_STARCRAFT = Path(__file__).parent / "data" / "starcraft.pdf"
 PDF_SIMPLE = Path(__file__).parent / "data" / "simple.pdf"
 DOCX_SIMPLE = Path(__file__).parent / "data" / "simple.docx"
+PDF_SIMPLE_BYTES = PDF_SIMPLE.open("rb").read()
 
 
 @pytest.fixture
@@ -22,7 +23,7 @@ def span_labels():
     return [label.value for label in DocItemLabel]
 
 
-@pytest.mark.parametrize("path", [PDF_STARCRAFT, PDF_SIMPLE])
+@pytest.mark.parametrize("path", [PDF_STARCRAFT, PDF_SIMPLE, PDF_SIMPLE_BYTES])
 def test_general(path, nlp, span_labels):
     layout = spaCyLayout(nlp)
     doc = layout(path)
