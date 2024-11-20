@@ -164,5 +164,5 @@ docs = layout.pipe(paths)
 
 | Argument | Type | Description |
 | --- | --- | --- |
-| `paths` | `Iterable[str \| Path \| bytes]` | Paths of documents to process or bytes. |
+| `sources` | `Iterable[str \| Path \| bytes]` | Paths of documents to process or bytes. |
 | **YIELDS** | `Doc` | The processed spaCy `Doc` object. |
