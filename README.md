@@ -88,7 +88,7 @@ for span in doc.spans["layout"]:
 | `Doc._.layout` | `DocLayout` | Layout features of the document. |
 | `Doc._.pages` | `list[tuple[PageLayout, list[Span]]]` | Pages in the document and the spans they contain. |
 | `Doc.spans["layout"]` | `spacy.tokens.SpanGroup` | The layout spans in the document. |
-| `Span.label_` | `str` | The type of the extracted layout span, e.g. `"text"` or `"section_header"`. [See here](https://github.com/DS4SD/docling-core/blob/main/docling_core/types/doc/labels.py) for options. |
+| `Span.label_` | `str` | The type of the extracted layout span, e.g. `"text"` or `"section_header"`. [See here](https://github.com/DS4SD/docling-core/blob/14cad33ae7f8dc011a79dd364361d2647c635466/docling_core/types/doc/labels.py) for options. |
 | `Span.label` | `int` | The integer ID of the span label. |
 | `Span.id` | `int` | Running index of layout span. |
 | `Span._.layout` | `SpanLayout` | Layout features of a layout span. |
