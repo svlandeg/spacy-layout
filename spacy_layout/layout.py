@@ -78,17 +78,13 @@ class spaCyLayout:
                 prov = item.prov[0]
                 page = pages[prov.page_no]
                 if page.width and page.height:
-                    box = prov.bbox
-                    height = box.b - box.t
-                    y = (
-                        box.t
-                        if box.coord_origin == CoordOrigin.TOPLEFT
-                        else page.height - box.t - height
-                    )
+                    is_bottom = prov.bbox.coord_origin == CoordOrigin.BOTTOMLEFT
+                    y = page.height - prov.bbox.t if is_bottom else prov.bbox.t
+                    height = prov.bbox.t - prov.bbox.b if is_bottom else prov.bbox.t
                     bounding_box = SpanLayout(
-                        x=box.l,
+                        x=prov.bbox.l,
                         y=y,
-                        width=box.r - box.l,
+                        width=prov.bbox.r - prov.bbox.l,
                         height=height,
                         page_no=prov.page_no,
                     )
