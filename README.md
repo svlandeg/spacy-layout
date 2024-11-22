@@ -2,7 +2,7 @@
 
 # spaCy Layout: Process PDFs, Word documents and more with spaCy
 
-This plugin integrates with [Docling](https://ds4sd.github.io/docling/) to bring structured processing of **PDFs**, **Word documents** and other input formats to your [spaCy](https://spacy.io) pipeline. It outputs clean, **structured data** in a text-based format and outputs spaCy's familiar [`Doc`](https://spacy.io/api/doc) objects that let you access labelled text spans like sections, headings, or footnotes.
+This plugin integrates with [Docling](https://ds4sd.github.io/docling/) to bring structured processing of **PDFs**, **Word documents** and other input formats to your [spaCy](https://spacy.io) pipeline. It outputs clean, **structured data** in a text-based format and creates spaCy's familiar [`Doc`](https://spacy.io/api/doc) objects that let you access labelled text spans like sections, headings, or footnotes.
 
 This workflow makes it easy to apply powerful **NLP techniques** to your documents, including linguistic analysis, named entity recognition, text classification and more. It's also great for implementing **chunking for RAG** pipelines.
 
@@ -91,7 +91,7 @@ for span in doc.spans["layout"]:
 | `Span.label_` | `str` | The type of the extracted layout span, e.g. `"text"` or `"section_header"`. [See here](https://github.com/DS4SD/docling-core/blob/14cad33ae7f8dc011a79dd364361d2647c635466/docling_core/types/doc/labels.py) for options. |
 | `Span.label` | `int` | The integer ID of the span label. |
 | `Span.id` | `int` | Running index of layout span. |
-| `Span._.layout` | `SpanLayout` | Layout features of a layout span. |
+| `Span._.layout` | `SpanLayout \| None` | Layout features of a layout span. |
 | `Span._.heading` | `Span \| None` | Closest heading to a span, if available. |
 
 ### <kbd>dataclass</kbd> PageLayout
