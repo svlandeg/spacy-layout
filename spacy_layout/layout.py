@@ -1,21 +1,26 @@
 from io import BytesIO
 from pathlib import Path
-from typing import Iterable, Iterator
+from typing import TYPE_CHECKING, Iterable, Iterator
 
-from docling.datamodel.base_models import DocumentStream, InputFormat
-from docling.document_converter import ConversionResult, DocumentConverter, FormatOption
+from docling.datamodel.base_models import DocumentStream
+from docling.document_converter import DocumentConverter
 from docling_core.types.doc.base import CoordOrigin
 from docling_core.types.doc.labels import DocItemLabel
-from spacy.language import Language
 from spacy.tokens import Doc, Span, SpanGroup
 
 from .types import Attrs, DocLayout, PageLayout, SpanLayout
+
+if TYPE_CHECKING:
+    from docling.datamodel.base_models import InputFormat
+    from docling.document_converter import ConversionResult, FormatOption
+    from pandas import DataFrame
+    from spacy.language import Language
 
 
 class spaCyLayout:
     def __init__(
         self,
-        nlp: Language,
+        nlp: "Language",
         separator: str | None = "\n\n",
         attrs: dict[str, str] = {},
         headings: list[str] = [
@@ -23,7 +28,7 @@ class spaCyLayout:
             DocItemLabel.PAGE_HEADER,
             DocItemLabel.TITLE,
         ],
-        docling_options: dict[InputFormat, FormatOption] | None = None,
+        docling_options: dict["InputFormat", "FormatOption"] | None = None,
     ) -> None:
         """Initialize the layout parser and Docling converter."""
         self.nlp = nlp
@@ -31,6 +36,7 @@ class spaCyLayout:
         self.attrs = Attrs(
             doc_layout=attrs.get("doc_layout", "layout"),
             doc_pages=attrs.get("doc_pages", "pages"),
+            doc_tables=attrs.get("doc_tables", "tables"),
             span_layout=attrs.get("span_layout", "layout"),
             span_heading=attrs.get("span_heading", "heading"),
             span_group=attrs.get("span_group", "layout"),
@@ -40,6 +46,7 @@ class spaCyLayout:
         # Set spaCy extension attributes for custom data
         Doc.set_extension(self.attrs.doc_layout, default=None, force=True)
         Doc.set_extension(self.attrs.doc_pages, getter=self.get_pages, force=True)
+        Doc.set_extension(self.attrs.doc_tables, default=None, force=True)
         Span.set_extension(self.attrs.span_layout, default=None, force=True)
         Span.set_extension(self.attrs.span_heading, getter=self.get_heading, force=True)
 
@@ -60,7 +67,7 @@ class spaCyLayout:
             return source
         return DocumentStream(name="source", stream=BytesIO(source))
 
-    def _result_to_doc(self, result: ConversionResult) -> Doc:
+    def _result_to_doc(self, result: "ConversionResult") -> Doc:
         inputs = []
         pages = {
             (page.page_no + 1): PageLayout(
@@ -91,6 +98,8 @@ class spaCyLayout:
             inputs.append((item.text, item.label, bounding_box))
         doc = self._texts_to_doc(inputs)
         doc._.set(self.attrs.doc_layout, DocLayout(pages=[p for p in pages.values()]))
+        tables = [table.export_to_dataframe() for table in result.document.tables]
+        doc._.set(self.attrs.doc_tables, tables)
         return doc
 
     def _texts_to_doc(self, inputs: list[tuple[str, str, SpanLayout]]) -> Doc:
