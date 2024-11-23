@@ -8,11 +8,12 @@ from docling_core.types.doc.base import CoordOrigin
 from docling_core.types.doc.labels import DocItemLabel
 from spacy.tokens import Doc, Span, SpanGroup
 
-from .types import Attrs, DocLayout, PageLayout, SpanLayout
+from .types import Attrs, DocLayout, DoclingItem, PageLayout, SpanLayout, Table
 
 if TYPE_CHECKING:
     from docling.datamodel.base_models import InputFormat
     from docling.document_converter import ConversionResult, FormatOption
+    from docling_core.types.doc.document import TableItem
     from spacy.language import Language
 
 
@@ -79,26 +80,13 @@ class spaCyLayout:
         for item in result.document.texts:
             if item.text == "":
                 continue
-            bounding_box = None
-            if item.prov:
-                prov = item.prov[0]
-                page = pages[prov.page_no]
-                if page.width and page.height:
-                    is_bottom = prov.bbox.coord_origin == CoordOrigin.BOTTOMLEFT
-                    y = page.height - prov.bbox.t if is_bottom else prov.bbox.t
-                    height = prov.bbox.t - prov.bbox.b if is_bottom else prov.bbox.t
-                    bounding_box = SpanLayout(
-                        x=prov.bbox.l,
-                        y=y,
-                        width=prov.bbox.r - prov.bbox.l,
-                        height=height,
-                        page_no=prov.page_no,
-                    )
-            inputs.append((item.text, item.label, bounding_box))
+            span_layout = self._get_span_layout(item, pages)
+            inputs.append((item.text, item.label, span_layout))
         doc = self._texts_to_doc(inputs)
         doc._.set(self.attrs.doc_layout, DocLayout(pages=[p for p in pages.values()]))
-        tables = [table.export_to_dataframe() for table in result.document.tables]
-        doc._.set(self.attrs.doc_tables, tables)
+        doc._.set(
+            self.attrs.doc_tables, self._get_tables(result.document.tables, pages)
+        )
         return doc
 
     def _texts_to_doc(self, inputs: list[tuple[str, str, SpanLayout]]) -> Doc:
@@ -132,6 +120,36 @@ class spaCyLayout:
             doc, name=self.attrs.span_group, spans=spans
         )
         return doc
+
+    def _get_span_layout(
+        self, item: DoclingItem, pages: dict[int, PageLayout]
+    ) -> SpanLayout | None:
+        bounding_box = None
+        if item.prov:
+            prov = item.prov[0]
+            page = pages[prov.page_no]
+            if page.width and page.height:
+                is_bottom = prov.bbox.coord_origin == CoordOrigin.BOTTOMLEFT
+                y = page.height - prov.bbox.t if is_bottom else prov.bbox.t
+                height = prov.bbox.t - prov.bbox.b if is_bottom else prov.bbox.t
+                bounding_box = SpanLayout(
+                    x=prov.bbox.l,
+                    y=y,
+                    width=prov.bbox.r - prov.bbox.l,
+                    height=height,
+                    page_no=prov.page_no,
+                )
+        return bounding_box
+
+    def _get_tables(
+        self, data: list["TableItem"], pages: dict[int, PageLayout]
+    ) -> list[Table]:
+        tables = []
+        for table_item in data:
+            layout = self._get_span_layout(table_item, pages)
+            table = Table(df=table_item.export_to_dataframe(), layout=layout)
+            tables.append(table)
+        return tables
 
     def get_pages(self, doc: Doc) -> list[tuple[PageLayout, list[Span]]]:
         """Get all pages and their layout spans."""

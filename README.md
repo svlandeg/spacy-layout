@@ -35,6 +35,8 @@ doc = layout("./starcraft.pdf")
 print(doc.text)
 # Document layout including pages and page sizes
 print(doc._.layout)
+# Tables in the document and their extracted data
+print(doc._.tables)
 
 # Layout spans for different sections
 for span in doc.spans["layout"]:
@@ -87,7 +89,7 @@ for span in doc.spans["layout"]:
 | --- | --- | --- |
 | `Doc._.layout` | `DocLayout` | Layout features of the document. |
 | `Doc._.pages` | `list[tuple[PageLayout, list[Span]]]` | Pages in the document and the spans they contain. |
-| `Doc._.tables` | `list[pandas.DataFrame]` | All tables in the document. |
+| `Doc._.tables` | `list[Table]` | All tables in the document. |
 | `Doc.spans["layout"]` | `spacy.tokens.SpanGroup` | The layout spans in the document. |
 | `Span.label_` | `str` | The type of the extracted layout span, e.g. `"text"` or `"section_header"`. [See here](https://github.com/DS4SD/docling-core/blob/14cad33ae7f8dc011a79dd364361d2647c635466/docling_core/types/doc/labels.py) for options. |
 | `Span.label` | `int` | The integer ID of the span label. |
@@ -118,6 +120,13 @@ for span in doc.spans["layout"]:
 | `width` | `float` | Width of the bounding box in pixels. |
 | `height` | `float` | Height of the bounding box in pixels. |
 | `page_no` | `int` | Number of page the span is on. |
+
+### <kbd>dataclass</kbd> Table
+
+| Attribute | Type | Description |
+| --- | --- | --- |
+| `df` | `pandas.DataFrame` | A dataframe of the tabular data. |
+| `layout` | `SpanLayout` | Layout properties of the table. |
 
 ### <kbd>class</kbd> `spaCyLayout`
 

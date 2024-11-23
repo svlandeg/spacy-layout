@@ -55,7 +55,7 @@ def test_table(nlp):
     layout = spaCyLayout(nlp)
     doc = layout(PDF_TABLE)
     assert len(doc._.get(layout.attrs.doc_tables)) == 1
-    table = doc._.get(layout.attrs.doc_tables)[0]
+    table = doc._.get(layout.attrs.doc_tables)[0].df
     assert table.columns.tolist() == ["Name", "Type", "Place of birth"]
     assert table.to_dict(orient="list") == {
         "Name": ["Ines", "Matt", "Baikal", "Stanislav Petrov"],
