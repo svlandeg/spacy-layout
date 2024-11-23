@@ -13,7 +13,6 @@ from .types import Attrs, DocLayout, PageLayout, SpanLayout
 if TYPE_CHECKING:
     from docling.datamodel.base_models import InputFormat
     from docling.document_converter import ConversionResult, FormatOption
-    from pandas import DataFrame
     from spacy.language import Language
 
 
