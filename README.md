@@ -114,7 +114,7 @@ for span in doc.spans["layout"]:
 | `Span.id` | `int` | Running index of layout span. |
 | `Span._.layout` | `SpanLayout \| None` | Layout features of a layout span. |
 | `Span._.heading` | `Span \| None` | Closest heading to a span, if available. |
-| `Span._.data` | `pandas.DataFrame` | The extracted data for table spans.
+| `Span._.data` | `pandas.DataFrame \| None` | The extracted data for table spans.
 
 ### <kbd>dataclass</kbd> PageLayout
 
