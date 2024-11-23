@@ -1,6 +1,6 @@
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterable, Iterator
+from typing import TYPE_CHECKING, Callable, Iterable, Iterator
 
 from docling.datamodel.base_models import DocumentStream
 from docling.document_converter import DocumentConverter
@@ -8,13 +8,16 @@ from docling_core.types.doc.base import CoordOrigin
 from docling_core.types.doc.labels import DocItemLabel
 from spacy.tokens import Doc, Span, SpanGroup
 
-from .types import Attrs, DocLayout, DoclingItem, PageLayout, SpanLayout, Table
+from .types import Attrs, DocLayout, DoclingItem, PageLayout, SpanLayout
 
 if TYPE_CHECKING:
     from docling.datamodel.base_models import InputFormat
     from docling.document_converter import ConversionResult, FormatOption
-    from docling_core.types.doc.document import TableItem
+    from pandas import DataFrame
     from spacy.language import Language
+
+
+TABLE_PLACEHOLDER = "<<TABLE>>"
 
 
 class spaCyLayout:
@@ -28,6 +31,7 @@ class spaCyLayout:
             DocItemLabel.PAGE_HEADER,
             DocItemLabel.TITLE,
         ],
+        display_table: Callable[["DataFrame"], str] = lambda _: TABLE_PLACEHOLDER,
         docling_options: dict["InputFormat", "FormatOption"] | None = None,
     ) -> None:
         """Initialize the layout parser and Docling converter."""
@@ -39,15 +43,18 @@ class spaCyLayout:
             doc_tables=attrs.get("doc_tables", "tables"),
             span_layout=attrs.get("span_layout", "layout"),
             span_heading=attrs.get("span_heading", "heading"),
+            span_data=attrs.get("span_data", "data"),
             span_group=attrs.get("span_group", "layout"),
         )
         self.headings = headings
+        self.display_table = display_table
         self.converter = DocumentConverter(format_options=docling_options)
         # Set spaCy extension attributes for custom data
         Doc.set_extension(self.attrs.doc_layout, default=None, force=True)
         Doc.set_extension(self.attrs.doc_pages, getter=self.get_pages, force=True)
-        Doc.set_extension(self.attrs.doc_tables, default=None, force=True)
+        Doc.set_extension(self.attrs.doc_tables, getter=self.get_tables, force=True)
         Span.set_extension(self.attrs.span_layout, default=None, force=True)
+        Span.set_extension(self.attrs.span_data, default=None, force=True)
         Span.set_extension(self.attrs.span_heading, getter=self.get_heading, force=True)
 
     def __call__(self, source: str | Path | bytes) -> Doc:
@@ -77,29 +84,34 @@ class spaCyLayout:
             )
             for page in result.pages
         }
-        for item in result.document.texts:
-            if item.text == "":
-                continue
-            span_layout = self._get_span_layout(item, pages)
-            inputs.append((item.text, item.label, span_layout))
-        doc = self._texts_to_doc(inputs)
+        text_items = {item.self_ref: item for item in result.document.texts}
+        table_items = {item.self_ref: item for item in result.document.tables}
+        # We want to iterate over the tree to get different elements in order
+        for node, _ in result.document.iterate_items():
+            if node.self_ref in text_items:
+                item = text_items[node.self_ref]
+                if item.text == "":
+                    continue
+                inputs.append((item.text, item))
+            elif node.self_ref in table_items:
+                item = table_items[node.self_ref]
+                inputs.append((self.display_table(item.export_to_dataframe()), item))
+        doc = self._texts_to_doc(inputs, pages)
         doc._.set(self.attrs.doc_layout, DocLayout(pages=[p for p in pages.values()]))
-        doc._.set(
-            self.attrs.doc_tables, self._get_tables(result.document.tables, pages)
-        )
         return doc
 
-    def _texts_to_doc(self, inputs: list[tuple[str, str, SpanLayout]]) -> Doc:
+    def _texts_to_doc(
+        self, inputs: list[tuple[str, DoclingItem]], pages: dict[int, PageLayout]
+    ) -> Doc:
         """Convert Docling structure to spaCy Doc."""
         words = []
         spaces = []
         span_data = []
         token_idx = 0
-        data = ((item_text, (label, layout)) for item_text, label, layout in inputs)
         # Tokenize the span because we can't rely on the document parsing to
         # give us items that are not split across token boundaries
         with self.nlp.select_pipes(disable=self.nlp.pipe_names):
-            for span_doc, (label, layout) in self.nlp.pipe(data, as_tuples=True):
+            for span_doc, item in self.nlp.pipe(inputs, as_tuples=True):
                 words += [token.text for token in span_doc]
                 spaces += [bool(token.whitespace_) for token in span_doc]
                 # Add separator token and don't include it in the layout span
@@ -108,13 +120,16 @@ class spaCyLayout:
                     spaces[-1] = False
                     spaces.append(False)
                 end = token_idx + len(span_doc)
-                span_data.append((token_idx, end, label, layout))
+                span_data.append((item, token_idx, end))
                 token_idx += len(span_doc) + (1 if self.sep else 0)
         doc = Doc(self.nlp.vocab, words=words, spaces=spaces)
         spans = []
-        for i, (start, end, label, layout) in enumerate(span_data):
-            span = Span(doc, start=start, end=end, label=label, span_id=i)
+        for i, (item, start, end) in enumerate(span_data):
+            span = Span(doc, start=start, end=end, label=item.label, span_id=i)
+            layout = self._get_span_layout(item, pages)
             span._.set(self.attrs.span_layout, layout)
+            if item.label == DocItemLabel.TABLE:
+                span._.set(self.attrs.span_data, item.export_to_dataframe())
             spans.append(span)
         doc.spans[self.attrs.span_group] = SpanGroup(
             doc, name=self.attrs.span_group, spans=spans
@@ -141,16 +156,6 @@ class spaCyLayout:
                 )
         return bounding_box
 
-    def _get_tables(
-        self, data: list["TableItem"], pages: dict[int, PageLayout]
-    ) -> list[Table]:
-        tables = []
-        for table_item in data:
-            layout = self._get_span_layout(table_item, pages)
-            table = Table(df=table_item.export_to_dataframe(), layout=layout)
-            tables.append(table)
-        return tables
-
     def get_pages(self, doc: Doc) -> list[tuple[PageLayout, list[Span]]]:
         """Get all pages and their layout spans."""
         layout = doc._.get(self.attrs.doc_layout)
@@ -169,3 +174,11 @@ class spaCyLayout:
             for candidate in spans[: span.id][::-1]:
                 if candidate.label_ in self.headings:
                     return candidate
+
+    def get_tables(self, doc: Doc) -> list[Span]:
+        """Get all tables in the document."""
+        return [
+            span
+            for span in doc.spans[self.attrs.span_group]
+            if span.label_ == DocItemLabel.TABLE
+        ]

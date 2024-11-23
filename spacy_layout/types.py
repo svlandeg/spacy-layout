@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 
 from docling_core.types.doc.document import (
     ListItem,
@@ -7,9 +6,6 @@ from docling_core.types.doc.document import (
     TableItem,
     TextItem,
 )
-
-if TYPE_CHECKING:
-    from pandas import DataFrame
 
 DoclingItem = ListItem | SectionHeaderItem | TextItem | TableItem
 
@@ -22,6 +18,7 @@ class Attrs:
     doc_pages: str
     doc_tables: str
     span_layout: str
+    span_data: str
     span_heading: str
     span_group: str
 
@@ -49,11 +46,3 @@ class SpanLayout:
     width: float
     height: float
     page_no: int
-
-
-@dataclass
-class Table:
-    """Tabular data in the document."""
-
-    df: "DataFrame"
-    layout: SpanLayout | None

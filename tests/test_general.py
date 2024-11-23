@@ -5,6 +5,7 @@ import spacy
 from docling_core.types.doc.labels import DocItemLabel
 
 from spacy_layout import spaCyLayout
+from spacy_layout.layout import TABLE_PLACEHOLDER
 from spacy_layout.types import DocLayout, SpanLayout
 
 PDF_STARCRAFT = Path(__file__).parent / "data" / "starcraft.pdf"
@@ -55,9 +56,11 @@ def test_table(nlp):
     layout = spaCyLayout(nlp)
     doc = layout(PDF_TABLE)
     assert len(doc._.get(layout.attrs.doc_tables)) == 1
-    table = doc._.get(layout.attrs.doc_tables)[0].df
-    assert table.columns.tolist() == ["Name", "Type", "Place of birth"]
-    assert table.to_dict(orient="list") == {
+    table = doc._.get(layout.attrs.doc_tables)[0]
+    assert table.text == TABLE_PLACEHOLDER
+    df = table._.get(layout.attrs.span_data)
+    assert df.columns.tolist() == ["Name", "Type", "Place of birth"]
+    assert df.to_dict(orient="list") == {
         "Name": ["Ines", "Matt", "Baikal", "Stanislav Petrov"],
         "Type": ["human", "human", "cat", "cat"],
         "Place of birth": [
@@ -67,3 +70,13 @@ def test_table(nlp):
             "Chernihiv, Ukraine",
         ],
     }
+
+
+def test_table_placeholder(nlp):
+    def display_table(df):
+        return f"Table with columns: {', '.join(df.columns.tolist())}"
+
+    layout = spaCyLayout(nlp, display_table=display_table)
+    doc = layout(PDF_TABLE)
+    table = doc._.get(layout.attrs.doc_tables)[0]
+    assert table.text == "Table with columns: Name, Type, Place of birth"
