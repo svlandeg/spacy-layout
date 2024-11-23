@@ -82,7 +82,7 @@ for table in doc._.tables:
     print(table._.layout, table._.data)
 ```
 
-By default, the span text is a placeholder `<<TABLE>>`, but you can customize how a table is rendered by providing a `display_table` callback to `spaCyLayout`, which receives the `pandas.DataFrame` of the data. This allows you to include the table figures in the document text and use them later on, e.g. during information extraction with a trained named entity recognizer or text classifier.
+By default, the span text is a placeholder `TABLE`, but you can customize how a table is rendered by providing a `display_table` callback to `spaCyLayout`, which receives the `pandas.DataFrame` of the data. This allows you to include the table figures in the document text and use them later on, e.g. during information extraction with a trained named entity recognizer or text classifier.
 
 ```python
 def display_table(df: pd.DataFrame):
@@ -157,6 +157,7 @@ layout = spaCyLayout(nlp)
 | `separator` | `str` | Token used to separate sections in the created `Doc` object. The separator won't be part of the layout span. If `None`, no separator will be added. Defaults to `"\n\n"`. |
 | `attrs` | `dict[str, str]` | Override the custom spaCy attributes. Can include `"doc_layout"`, `"doc_pages"`, `"doc_tables"`, `"span_layout"`, `"span_data"`, `"span_heading"` and `"span_group"`. |
 | `headings` | `list[str]` | Labels of headings to consider for `Span._.heading` detection. Defaults to `["section_header", "page_header", "title"]`. |
+| `display_table` | `Callable[[pandas.DataFrame], str]` | Function to generate the text-based representation of the table in the `Doc.text`. Defaults to the table placeholder `"TABLE"`. |
 | `docling_options` | `dict[InputFormat, FormatOption]` | [Format options](https://ds4sd.github.io/docling/usage/#advanced-options) passed to Docling's `DocumentConverter`. |
 | **RETURNS** | `spaCyLayout` | The initialized object. |
 

@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from spacy.language import Language
 
 
-TABLE_PLACEHOLDER = "<<TABLE>>"
+TABLE_PLACEHOLDER = "TABLE"
 
 
 class spaCyLayout:
