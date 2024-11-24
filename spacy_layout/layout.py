@@ -31,7 +31,7 @@ class spaCyLayout:
             DocItemLabel.PAGE_HEADER,
             DocItemLabel.TITLE,
         ],
-        display_table: Callable[["DataFrame"], str] = lambda _: TABLE_PLACEHOLDER,
+        display_table: Callable[["DataFrame"], str] | str = TABLE_PLACEHOLDER,
         docling_options: dict["InputFormat", "FormatOption"] | None = None,
     ) -> None:
         """Initialize the layout parser and Docling converter."""
@@ -95,7 +95,11 @@ class spaCyLayout:
                 inputs.append((item.text, item))
             elif node.self_ref in table_items:
                 item = table_items[node.self_ref]
-                inputs.append((self.display_table(item.export_to_dataframe()), item))
+                if isinstance(self.display_table, str):
+                    table_text = self.display_table
+                else:
+                    table_text = self.display_table(item.export_to_dataframe())
+                inputs.append((table_text, item))
         doc = self._texts_to_doc(inputs, pages)
         doc._.set(self.attrs.doc_layout, DocLayout(pages=[p for p in pages.values()]))
         return doc
