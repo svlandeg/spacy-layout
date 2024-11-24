@@ -88,7 +88,7 @@ for table in doc._.tables:
 By default, the span text is a placeholder `TABLE`, but you can customize how a table is rendered by providing a `display_table` callback to `spaCyLayout`, which receives the `pandas.DataFrame` of the data. This allows you to include the table figures in the document text and use them later on, e.g. during information extraction with a trained named entity recognizer or text classifier.
 
 ```python
-def display_table(df: pd.DataFrame):
+def display_table(df: pd.DataFrame) -> str:
     return f"Table with columns: {', '.join(df.columns.tolist())}"
 
 layout = spaCyLayout(nlp, display_table=display_table)
