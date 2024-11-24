@@ -2,10 +2,11 @@ from pathlib import Path
 
 import pytest
 import spacy
+from docling_core.types.doc.base import BoundingBox, CoordOrigin
 from docling_core.types.doc.labels import DocItemLabel
 
 from spacy_layout import spaCyLayout
-from spacy_layout.layout import TABLE_PLACEHOLDER
+from spacy_layout.layout import TABLE_PLACEHOLDER, get_bounding_box
 from spacy_layout.types import DocLayout, SpanLayout
 
 PDF_STARCRAFT = Path(__file__).parent / "data" / "starcraft.pdf"
@@ -80,3 +81,40 @@ def test_table_placeholder(nlp):
     doc = layout(PDF_TABLE)
     table = doc._.get(layout.attrs.doc_tables)[0]
     assert table.text == "Table with columns: Name, Type, Place of birth"
+
+
+@pytest.mark.parametrize(
+    "box,page_height,expected",
+    [
+        (
+            (200.0, 50.0, 100.0, 400.0, CoordOrigin.BOTTOMLEFT),
+            1000.0,
+            (100.0, 800.0, 300.0, 150.0),
+        ),
+        (
+            (200.0, 250.0, 100.0, 400.0, CoordOrigin.TOPLEFT),
+            1000.0,
+            (100.0, 200.0, 300.0, 50.0),
+        ),
+        (
+            (
+                648.3192749023438,
+                633.4112548828125,
+                155.50897216796875,
+                239.66929626464844,
+                CoordOrigin.BOTTOMLEFT,
+            ),
+            792.0,
+            (
+                155.50897216796875,
+                143.68072509765625,
+                84.16032409667969,
+                14.90802001953125,
+            ),
+        ),
+    ],
+)
+def test_bounding_box(box, page_height, expected):
+    top, bottom, left, right, origin = box
+    bbox = BoundingBox(t=top, b=bottom, l=left, r=right, coord_origin=origin)
+    assert get_bounding_box(bbox, page_height) == expected

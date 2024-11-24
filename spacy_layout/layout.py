@@ -13,6 +13,7 @@ from .types import Attrs, DocLayout, DoclingItem, PageLayout, SpanLayout
 if TYPE_CHECKING:
     from docling.datamodel.base_models import InputFormat
     from docling.document_converter import ConversionResult, FormatOption
+    from docling_core.types.doc.base import BoundingBox
     from pandas import DataFrame
     from spacy.language import Language
 
@@ -148,15 +149,9 @@ class spaCyLayout:
             prov = item.prov[0]
             page = pages[prov.page_no]
             if page.width and page.height:
-                is_bottom = prov.bbox.coord_origin == CoordOrigin.BOTTOMLEFT
-                y = page.height - prov.bbox.t if is_bottom else prov.bbox.t
-                height = prov.bbox.t - prov.bbox.b if is_bottom else prov.bbox.t
+                x, y, width, height = get_bounding_box(prov.bbox, page.height)
                 bounding_box = SpanLayout(
-                    x=prov.bbox.l,
-                    y=y,
-                    width=prov.bbox.r - prov.bbox.l,
-                    height=height,
-                    page_no=prov.page_no,
+                    x=x, y=y, width=width, height=height, page_no=prov.page_no
                 )
         return bounding_box
 
@@ -186,3 +181,13 @@ class spaCyLayout:
             for span in doc.spans[self.attrs.span_group]
             if span.label_ == DocItemLabel.TABLE
         ]
+
+
+def get_bounding_box(
+    bbox: "BoundingBox", page_height: float
+) -> tuple[float, float, float, float]:
+    is_bottom = bbox.coord_origin == CoordOrigin.BOTTOMLEFT
+    y = page_height - bbox.t if is_bottom else bbox.t
+    height = bbox.t - bbox.b if is_bottom else bbox.b - bbox.t
+    width = bbox.r - bbox.l
+    return (bbox.l, y, width, height)
