@@ -1,5 +1,14 @@
 from dataclasses import dataclass
 
+from docling_core.types.doc.document import (
+    ListItem,
+    SectionHeaderItem,
+    TableItem,
+    TextItem,
+)
+
+DoclingItem = ListItem | SectionHeaderItem | TextItem | TableItem
+
 
 @dataclass
 class Attrs:
@@ -7,7 +16,9 @@ class Attrs:
 
     doc_layout: str
     doc_pages: str
+    doc_tables: str
     span_layout: str
+    span_data: str
     span_heading: str
     span_group: str
 

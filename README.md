@@ -2,7 +2,7 @@
 
 # spaCy Layout: Process PDFs, Word documents and more with spaCy
 
-This plugin integrates with [Docling](https://ds4sd.github.io/docling/) to bring structured processing of **PDFs**, **Word documents** and other input formats to your [spaCy](https://spacy.io) pipeline. It outputs clean, **structured data** in a text-based format and creates spaCy's familiar [`Doc`](https://spacy.io/api/doc) objects that let you access labelled text spans like sections, headings, or footnotes.
+This plugin integrates with [Docling](https://ds4sd.github.io/docling/) to bring structured processing of **PDFs**, **Word documents** and other input formats to your [spaCy](https://spacy.io) pipeline. It outputs clean, **structured data** in a text-based format and creates spaCy's familiar [`Doc`](https://spacy.io/api/doc) objects that let you access labelled text spans like sections or headings, and tables with their data converted to a `pandas.DataFrame`.
 
 This workflow makes it easy to apply powerful **NLP techniques** to your documents, including linguistic analysis, named entity recognition, text classification and more. It's also great for implementing **chunking for RAG** pipelines.
 
@@ -35,6 +35,8 @@ doc = layout("./starcraft.pdf")
 print(doc.text)
 # Document layout including pages and page sizes
 print(doc._.layout)
+# Tables in the document and their extracted data
+print(doc._.tables)
 
 # Layout spans for different sections
 for span in doc.spans["layout"]:
@@ -71,6 +73,27 @@ doc = layout("./starcraft.pdf")
 doc = nlp(doc)
 ```
 
+### Tables and tabular data
+
+Tables are included in the layout spans with the label `"table"` and under the shortcut `Doc._.tables`. They expose a `layout` extension attribute, as well as an attribute `data`, which includes the tabular data converted to a `pandas.DataFrame`.
+
+```python
+for table in doc._.tables:
+    # Token position and bounding box
+    print(table.start, table.end, table._.layout)
+    # pandas.DataFrame of contents
+    print(table._.data)
+```
+
+By default, the span text is a placeholder `TABLE`, but you can customize how a table is rendered by providing a `display_table` callback to `spaCyLayout`, which receives the `pandas.DataFrame` of the data. This allows you to include the table figures in the document text and use them later on, e.g. during information extraction with a trained named entity recognizer or text classifier.
+
+```python
+def display_table(df: pd.DataFrame) -> str:
+    return f"Table with columns: {', '.join(df.columns.tolist())}"
+
+layout = spaCyLayout(nlp, display_table=display_table)
+```
+
 ## 🎛️ API
 
 ### Data and extension attributes
@@ -87,12 +110,14 @@ for span in doc.spans["layout"]:
 | --- | --- | --- |
 | `Doc._.layout` | `DocLayout` | Layout features of the document. |
 | `Doc._.pages` | `list[tuple[PageLayout, list[Span]]]` | Pages in the document and the spans they contain. |
+| `Doc._.tables` | `list[Span]` | All tables in the document. |
 | `Doc.spans["layout"]` | `spacy.tokens.SpanGroup` | The layout spans in the document. |
 | `Span.label_` | `str` | The type of the extracted layout span, e.g. `"text"` or `"section_header"`. [See here](https://github.com/DS4SD/docling-core/blob/14cad33ae7f8dc011a79dd364361d2647c635466/docling_core/types/doc/labels.py) for options. |
 | `Span.label` | `int` | The integer ID of the span label. |
 | `Span.id` | `int` | Running index of layout span. |
 | `Span._.layout` | `SpanLayout \| None` | Layout features of a layout span. |
 | `Span._.heading` | `Span \| None` | Closest heading to a span, if available. |
+| `Span._.data` | `pandas.DataFrame \| None` | The extracted data for table spans.
 
 ### <kbd>dataclass</kbd> PageLayout
 
@@ -133,8 +158,9 @@ layout = spaCyLayout(nlp)
 | --- | --- | --- |
 | `nlp` | `spacy.language.Language` | The initialized `nlp` object to use for tokenization. |
 | `separator` | `str` | Token used to separate sections in the created `Doc` object. The separator won't be part of the layout span. If `None`, no separator will be added. Defaults to `"\n\n"`. |
-| `attrs` | `dict[str, str]` | Override the custom spaCy attributes. Can include `"doc_layout"`, `"doc_pages"`, `"span_layout"`, `"span_heading"` and `"span_group"`. |
+| `attrs` | `dict[str, str]` | Override the custom spaCy attributes. Can include `"doc_layout"`, `"doc_pages"`, `"doc_tables"`, `"span_layout"`, `"span_data"`, `"span_heading"` and `"span_group"`. |
 | `headings` | `list[str]` | Labels of headings to consider for `Span._.heading` detection. Defaults to `["section_header", "page_header", "title"]`. |
+| `display_table` | `Callable[[pandas.DataFrame], str] \| str` | Function to generate the text-based representation of the table in the `Doc.text` or placeholder text. Defaults to `"TABLE"`. |
 | `docling_options` | `dict[InputFormat, FormatOption]` | [Format options](https://ds4sd.github.io/docling/usage/#advanced-options) passed to Docling's `DocumentConverter`. |
 | **RETURNS** | `spaCyLayout` | The initialized object. |
 
