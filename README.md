@@ -79,7 +79,10 @@ Tables are included in the layout spans with the label `"table"` and under the s
 
 ```python
 for table in doc._.tables:
-    print(table._.layout, table._.data)
+    # Token position and bounding box
+    print(table.start, table.end, table._.layout)
+    # pandas.DataFrame of contents
+    print(table._.data)
 ```
 
 By default, the span text is a placeholder `TABLE`, but you can customize how a table is rendered by providing a `display_table` callback to `spaCyLayout`, which receives the `pandas.DataFrame` of the data. This allows you to include the table figures in the document text and use them later on, e.g. during information extraction with a trained named entity recognizer or text classifier.
