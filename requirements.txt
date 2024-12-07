@@ -1,4 +1,6 @@
 spacy>=3.7.5
 docling>=2.5.2
+pandas  # version range set by Docling
+srsly  # version range set by spaCy
 # Dev requirements
 pytest

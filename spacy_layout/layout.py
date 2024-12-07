@@ -2,23 +2,29 @@ from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Iterable, Iterator
 
+import srsly
 from docling.datamodel.base_models import DocumentStream
 from docling.document_converter import DocumentConverter
-from docling_core.types.doc.base import CoordOrigin
 from docling_core.types.doc.labels import DocItemLabel
 from spacy.tokens import Doc, Span, SpanGroup
 
 from .types import Attrs, DocLayout, DoclingItem, PageLayout, SpanLayout
+from .util import decode_df, decode_obj, encode_df, encode_obj, get_bounding_box
 
 if TYPE_CHECKING:
     from docling.datamodel.base_models import InputFormat
     from docling.document_converter import ConversionResult, FormatOption
-    from docling_core.types.doc.base import BoundingBox
     from pandas import DataFrame
     from spacy.language import Language
 
 
 TABLE_PLACEHOLDER = "TABLE"
+
+# Register msgpack encoders and decoders for custom types
+srsly.msgpack_encoders.register("spacy-layout.dataclass", func=encode_obj)
+srsly.msgpack_decoders.register("spacy-layout.dataclass", func=decode_obj)
+srsly.msgpack_encoders.register("spacy-layout.dataframe", func=encode_df)
+srsly.msgpack_decoders.register("spacy-layout.dataframe", func=decode_df)
 
 
 class spaCyLayout:
@@ -181,13 +187,3 @@ class spaCyLayout:
             for span in doc.spans[self.attrs.span_group]
             if span.label_ == DocItemLabel.TABLE
         ]
-
-
-def get_bounding_box(
-    bbox: "BoundingBox", page_height: float
-) -> tuple[float, float, float, float]:
-    is_bottom = bbox.coord_origin == CoordOrigin.BOTTOMLEFT
-    y = page_height - bbox.t if is_bottom else bbox.t
-    height = bbox.t - bbox.b if is_bottom else bbox.b - bbox.t
-    width = bbox.r - bbox.l
-    return (bbox.l, y, width, height)
