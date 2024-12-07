@@ -29,12 +29,21 @@ class PageLayout:
     width: float
     height: float
 
+    @classmethod
+    def from_dict(cls, data: dict) -> "PageLayout":
+        return cls(**data)
+
 
 @dataclass
 class DocLayout:
     """Document layout features added to Doc object"""
 
     pages: list[PageLayout]
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "DocLayout":
+        pages = [PageLayout.from_dict(page) for page in data.get("pages", [])]
+        return cls(pages=pages)
 
 
 @dataclass
@@ -46,3 +55,7 @@ class SpanLayout:
     width: float
     height: float
     page_no: int
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "SpanLayout":
+        return cls(**data)
