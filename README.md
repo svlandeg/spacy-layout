@@ -6,6 +6,9 @@ This plugin integrates with [Docling](https://ds4sd.github.io/docling/) to bring
 
 This workflow makes it easy to apply powerful **NLP techniques** to your documents, including linguistic analysis, named entity recognition, text classification and more. It's also great for implementing **chunking for RAG** pipelines.
 
+> 📖 **Blog post:** ["From PDFs to AI-ready structured data: a deep dive"
+](https://explosion.ai/blog/pdfs-nlp-structured-data). A new modular workflow for converting PDFs and similar documents to structured data, featuring `spacy-layout` and Docling.
+
 [![Test](https://github.com/explosion/spacy-layout/actions/workflows/test.yml/badge.svg)](https://github.com/explosion/spacy-layout/actions/workflows/test.yml)
 [![Current Release Version](https://img.shields.io/github/release/explosion/spacy-layout.svg?style=flat-square&logo=github&include_prereleases)](https://github.com/explosion/spacy-layout/releases)
 [![pypi Version](https://img.shields.io/pypi/v/spacy-layout.svg?style=flat-square&logo=pypi&logoColor=white)](https://pypi.org/project/spacy-layout/)
