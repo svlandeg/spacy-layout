@@ -48,6 +48,7 @@ class spaCyLayout:
             doc_layout=attrs.get("doc_layout", "layout"),
             doc_pages=attrs.get("doc_pages", "pages"),
             doc_tables=attrs.get("doc_tables", "tables"),
+            doc_markdown=attrs.get("doc_markdown", "markdown"),
             span_layout=attrs.get("span_layout", "layout"),
             span_heading=attrs.get("span_heading", "heading"),
             span_data=attrs.get("span_data", "data"),
@@ -60,6 +61,7 @@ class spaCyLayout:
         Doc.set_extension(self.attrs.doc_layout, default=None, force=True)
         Doc.set_extension(self.attrs.doc_pages, getter=self.get_pages, force=True)
         Doc.set_extension(self.attrs.doc_tables, getter=self.get_tables, force=True)
+        Doc.set_extension(self.attrs.doc_markdown, default=None, force=True)
         Span.set_extension(self.attrs.span_layout, default=None, force=True)
         Span.set_extension(self.attrs.span_data, default=None, force=True)
         Span.set_extension(self.attrs.span_heading, getter=self.get_heading, force=True)
@@ -109,6 +111,7 @@ class spaCyLayout:
                 inputs.append((table_text, item))
         doc = self._texts_to_doc(inputs, pages)
         doc._.set(self.attrs.doc_layout, DocLayout(pages=[p for p in pages.values()]))
+        doc._.set(self.attrs.doc_markdown, result.document.export_to_markdown())
         return doc
 
     def _texts_to_doc(

@@ -17,6 +17,7 @@ class Attrs:
     doc_layout: str
     doc_pages: str
     doc_tables: str
+    doc_markdown: str
     span_layout: str
     span_data: str
     span_heading: str
