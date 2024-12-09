@@ -40,6 +40,8 @@ print(doc.text)
 print(doc._.layout)
 # Tables in the document and their extracted data
 print(doc._.tables)
+# Markdown representation of the document
+print(doc._.markdown)
 
 # Layout spans for different sections
 for span in doc.spans["layout"]:
@@ -114,6 +116,7 @@ for span in doc.spans["layout"]:
 | `Doc._.layout` | `DocLayout` | Layout features of the document. |
 | `Doc._.pages` | `list[tuple[PageLayout, list[Span]]]` | Pages in the document and the spans they contain. |
 | `Doc._.tables` | `list[Span]` | All tables in the document. |
+| `Doc._.markdown` | `str` | Markdown representation of the document. |
 | `Doc.spans["layout"]` | `spacy.tokens.SpanGroup` | The layout spans in the document. |
 | `Span.label_` | `str` | The type of the extracted layout span, e.g. `"text"` or `"section_header"`. [See here](https://github.com/DS4SD/docling-core/blob/14cad33ae7f8dc011a79dd364361d2647c635466/docling_core/types/doc/labels.py) for options. |
 | `Span.label` | `int` | The integer ID of the span label. |
@@ -161,7 +164,7 @@ layout = spaCyLayout(nlp)
 | --- | --- | --- |
 | `nlp` | `spacy.language.Language` | The initialized `nlp` object to use for tokenization. |
 | `separator` | `str` | Token used to separate sections in the created `Doc` object. The separator won't be part of the layout span. If `None`, no separator will be added. Defaults to `"\n\n"`. |
-| `attrs` | `dict[str, str]` | Override the custom spaCy attributes. Can include `"doc_layout"`, `"doc_pages"`, `"doc_tables"`, `"span_layout"`, `"span_data"`, `"span_heading"` and `"span_group"`. |
+| `attrs` | `dict[str, str]` | Override the custom spaCy attributes. Can include `"doc_layout"`, `"doc_pages"`, `"doc_tables"`, `"doc_markdown"`, `"span_layout"`, `"span_data"`, `"span_heading"` and `"span_group"`. |
 | `headings` | `list[str]` | Labels of headings to consider for `Span._.heading` detection. Defaults to `["section_header", "page_header", "title"]`. |
 | `display_table` | `Callable[[pandas.DataFrame], str] \| str` | Function to generate the text-based representation of the table in the `Doc.text` or placeholder text. Defaults to `"TABLE"`. |
 | `docling_options` | `dict[InputFormat, FormatOption]` | [Format options](https://ds4sd.github.io/docling/usage/#advanced-options) passed to Docling's `DocumentConverter`. |

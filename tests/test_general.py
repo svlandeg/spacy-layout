@@ -75,6 +75,15 @@ def test_table(nlp):
             "Chernihiv, Ukraine",
         ],
     }
+    markdown = (
+        "| Name             | Type   | Place of birth     |\n"
+        "|------------------|--------|--------------------|\n"
+        "| Ines             | human  | Cologne, Germany   |\n"
+        "| Matt             | human  | Sydney, Australia  |\n"
+        "| Baikal           | cat    | Berlin, Germany    |\n"
+        "| Stanislav Petrov | cat    | Chernihiv, Ukraine |\n"
+    )
+    assert markdown in doc._.get(layout.attrs.doc_markdown)
 
 
 def test_table_placeholder(nlp):
