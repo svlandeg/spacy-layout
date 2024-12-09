@@ -150,16 +150,14 @@ class spaCyLayout:
     def _get_span_layout(
         self, item: DoclingItem, pages: dict[int, PageLayout]
     ) -> SpanLayout | None:
-        bounding_box = None
         if item.prov:
             prov = item.prov[0]
             page = pages[prov.page_no]
             if page.width and page.height:
                 x, y, width, height = get_bounding_box(prov.bbox, page.height)
-                bounding_box = SpanLayout(
+                return SpanLayout(
                     x=x, y=y, width=width, height=height, page_no=prov.page_no
                 )
-        return bounding_box
 
     def get_pages(self, doc: Doc) -> list[tuple[PageLayout, list[Span]]]:
         """Get all pages and their layout spans."""
