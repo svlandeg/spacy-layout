@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Callable, Iterable, Iterator
 import srsly
 from docling.datamodel.base_models import DocumentStream
 from docling.document_converter import DocumentConverter
+from docling_core.types.doc.document import DoclingDocument
 from docling_core.types.doc.labels import DocItemLabel
 from spacy.tokens import Doc, Span, SpanGroup
 
@@ -13,7 +14,7 @@ from .util import decode_df, decode_obj, encode_df, encode_obj, get_bounding_box
 
 if TYPE_CHECKING:
     from docling.datamodel.base_models import InputFormat
-    from docling.document_converter import ConversionResult, FormatOption
+    from docling.document_converter import FormatOption
     from pandas import DataFrame
     from spacy.language import Language
 
@@ -66,9 +67,12 @@ class spaCyLayout:
         Span.set_extension(self.attrs.span_data, default=None, force=True)
         Span.set_extension(self.attrs.span_heading, getter=self.get_heading, force=True)
 
-    def __call__(self, source: str | Path | bytes) -> Doc:
+    def __call__(self, source: str | Path | bytes | DoclingDocument) -> Doc:
         """Call parser on a path to create a spaCy Doc object."""
-        result = self.converter.convert(self._get_source(source))
+        if isinstance(source, DoclingDocument):
+            result = source
+        else:
+            result = self.converter.convert(self._get_source(source)).document
         return self._result_to_doc(result)
 
     def pipe(self, sources: Iterable[str | Path | bytes]) -> Iterator[Doc]:
@@ -76,27 +80,27 @@ class spaCyLayout:
         data = (self._get_source(source) for source in sources)
         results = self.converter.convert_all(data)
         for result in results:
-            yield self._result_to_doc(result)
+            yield self._result_to_doc(result.document)
 
     def _get_source(self, source: str | Path | bytes) -> str | Path | DocumentStream:
         if isinstance(source, (str, Path)):
             return source
         return DocumentStream(name="source", stream=BytesIO(source))
 
-    def _result_to_doc(self, result: "ConversionResult") -> Doc:
+    def _result_to_doc(self, document: DoclingDocument) -> Doc:
         inputs = []
         pages = {
-            (page.page_no + 1): PageLayout(
+            (page.page_no): PageLayout(
                 page_no=page.page_no + 1,
                 width=page.size.width if page.size else 0,
                 height=page.size.height if page.size else 0,
             )
-            for page in result.pages
+            for _, page in document.pages.items()
         }
-        text_items = {item.self_ref: item for item in result.document.texts}
-        table_items = {item.self_ref: item for item in result.document.tables}
+        text_items = {item.self_ref: item for item in document.texts}
+        table_items = {item.self_ref: item for item in document.tables}
         # We want to iterate over the tree to get different elements in order
-        for node, _ in result.document.iterate_items():
+        for node, _ in document.iterate_items():
             if node.self_ref in text_items:
                 item = text_items[node.self_ref]
                 if item.text == "":
@@ -111,7 +115,7 @@ class spaCyLayout:
                 inputs.append((table_text, item))
         doc = self._texts_to_doc(inputs, pages)
         doc._.set(self.attrs.doc_layout, DocLayout(pages=[p for p in pages.values()]))
-        doc._.set(self.attrs.doc_markdown, result.document.export_to_markdown())
+        doc._.set(self.attrs.doc_markdown, document.export_to_markdown())
         return doc
 
     def _texts_to_doc(
