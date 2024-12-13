@@ -181,7 +181,7 @@ doc = layout("./starcraft.pdf")
 
 | Argument | Type | Description |
 | --- | --- | --- |
-| `source` | `str \| Path \| bytes` | Path of document to process or bytes. |
+| `source` | `str \| Path \| bytes \| DoclingDocument` | Path of document to process, bytes or already created `DoclingDocument`. |
 | **RETURNS** | `Doc` | The processed spaCy `Doc` object. |
 
 #### <kbd>method</kbd> `spaCyLayout.pipe`
