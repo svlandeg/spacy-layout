@@ -91,7 +91,7 @@ class spaCyLayout:
         inputs = []
         pages = {
             (page.page_no): PageLayout(
-                page_no=page.page_no + 1,
+                page_no=page.page_no,
                 width=page.size.width if page.size else 0,
                 height=page.size.height if page.size else 0,
             )
