@@ -40,6 +40,22 @@ def test_general(path, nlp, span_labels):
         assert span.label_ in span_labels
         assert isinstance(span._.get(layout.attrs.span_layout), SpanLayout)
 
+@pytest.mark.parametrize("path, pg_no", [(PDF_STARCRAFT, 6), (PDF_SIMPLE, 1)])
+def test_pages(path, pg_no, nlp):
+    layout = spaCyLayout(nlp)
+    doc = layout(path)
+    # This should not raise a KeyError when accessing `pages` dict
+    # Key Error would mean a mismatched pagination on document layout and span layout
+    result = layout.get_pages(doc)
+    assert len(result) == pg_no
+    assert result[0][0].page_no == 1
+    if pg_no == 6:
+        # there should be 18 spans on the pg_no 1
+        assert len(result[0][1]) == 18
+    elif pg_no == 1:
+        # there should be 4 spans on pg_no 1
+        assert len(result[0][1]) == 4
+
 
 @pytest.mark.parametrize("path", [PDF_SIMPLE, DOCX_SIMPLE])
 @pytest.mark.parametrize("separator", ["\n\n", ""])
