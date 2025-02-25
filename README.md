@@ -130,7 +130,7 @@ for span in doc.spans["layout"]:
 | Attribute | Type | Description |
 | --- | --- | --- |
 | `page_no` | `int` | The page number (1-indexed). |
-| `width` | `float` | Page with in pixels. |
+| `width` | `float` | Page width in pixels. |
 | `height` | `float` | Page height in pixels. |
 
 ### <kbd>dataclass</kbd> DocLayout
