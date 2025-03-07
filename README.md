@@ -63,8 +63,6 @@ for doc in layout.pipe(paths):
     print(doc._.layout)
 ```
 
-After you've processed the documents, you can [serialize](https://spacy.io/usage/saving-loading#docs) the structured `Doc` objects in spaCy's efficient binary format, so you don't have to re-run the resource-intensive conversion.
-
 spaCy also allows you to call the `nlp` object on an already created `Doc`, so you can easily apply a pipeline of components for [linguistic analysis](https://spacy.io/usage/linguistic-features) or [named entity recognition](https://spacy.io/usage/linguistic-features#named-entities), use [rule-based matching](https://spacy.io/usage/rule-based-matching) or anything else you can do with spaCy.
 
 ```python
@@ -98,6 +96,27 @@ def display_table(df: pd.DataFrame) -> str:
 
 layout = spaCyLayout(nlp, display_table=display_table)
 ```
+
+### Serialization
+
+After you've processed the documents, you can [serialize](https://spacy.io/usage/saving-loading#docs) the structured `Doc` objects in spaCy's efficient binary format, so you don't have to re-run the resource-intensive conversion.
+
+```python
+from spacy.tokens import DocBin
+
+docs = layout.pipe(["one.pdf", "two.pdf", "three.pdf"])
+doc_bin = DocBin(docs=docs, store_user_data=True)
+doc_bin.to_disk("./file.spacy")
+```
+
+> ⚠️ **Note on deserializing with extension attributes:** The custom extension attributes like `Doc._.layout` are currently registered when `spaCyLayout` is initialized. So if you're loading back `Doc` objects with layout information from a binary file, you'll need to initialize it so the custom attributes can be repopulated. We're planning on making this more elegant in an upcoming version.
+>
+> ```diff
+> + layout = spacyLayout(nlp)
+> doc_bin = DocBin(store_user_data=True).from_disk("./file.spacy")
+> docs = list(doc_bin.get_docs(nlp.vocab))
+> ```
+
 
 ## 🎛️ API
 
