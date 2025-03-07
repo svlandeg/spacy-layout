@@ -40,6 +40,7 @@ def test_general(path, nlp, span_labels):
         assert span.label_ in span_labels
         assert isinstance(span._.get(layout.attrs.span_layout), SpanLayout)
 
+
 @pytest.mark.parametrize("path, pg_no", [(PDF_STARCRAFT, 6), (PDF_SIMPLE, 1)])
 def test_pages(path, pg_no, nlp):
     layout = spaCyLayout(nlp)
@@ -71,6 +72,15 @@ def test_simple_pipe(nlp):
     layout = spaCyLayout(nlp)
     for doc in layout.pipe([PDF_SIMPLE, DOCX_SIMPLE]):
         assert len(doc.spans[layout.attrs.span_group]) == 4
+
+
+def test_simple_pipe_as_tuples(nlp):
+    layout = spaCyLayout(nlp)
+    data = [(PDF_SIMPLE, "pdf"), (DOCX_SIMPLE, "docx")]
+    result = list(layout.pipe(data, as_tuples=True))
+    for doc, _ in result:
+        assert len(doc.spans[layout.attrs.span_group]) == 4
+    assert [context for _, context in result] == ["pdf", "docx"]
 
 
 def test_table(nlp):

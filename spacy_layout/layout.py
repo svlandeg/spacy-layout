@@ -1,6 +1,15 @@
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Iterable, Iterator
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Iterable,
+    Iterator,
+    Literal,
+    TypeVar,
+    cast,
+    overload,
+)
 
 import srsly
 from docling.datamodel.base_models import DocumentStream
@@ -18,6 +27,8 @@ if TYPE_CHECKING:
     from pandas import DataFrame
     from spacy.language import Language
 
+# Type variable for contexts piped with documents
+_AnyContext = TypeVar("_AnyContext")
 
 TABLE_PLACEHOLDER = "TABLE"
 
@@ -75,12 +86,42 @@ class spaCyLayout:
             result = self.converter.convert(self._get_source(source)).document
         return self._result_to_doc(result)
 
-    def pipe(self, sources: Iterable[str | Path | bytes]) -> Iterator[Doc]:
+    @overload
+    def pipe(
+        self,
+        sources: Iterable[str | Path | bytes],
+        as_tuples: Literal[False] = ...,
+    ) -> Iterator[Doc]: ...
+
+    @overload
+    def pipe(
+        self,
+        sources: Iterable[tuple[str | Path | bytes, _AnyContext]],
+        as_tuples: Literal[True] = ...,
+    ) -> Iterator[tuple[Doc, _AnyContext]]: ...
+
+    def pipe(
+        self,
+        sources: (
+            Iterable[str | Path | bytes]
+            | Iterable[tuple[str | Path | bytes, _AnyContext]]
+        ),
+        as_tuples: bool = False,
+    ) -> Iterator[Doc] | Iterator[tuple[Doc, _AnyContext]]:
         """Process multiple documents and create spaCy Doc objects."""
-        data = (self._get_source(source) for source in sources)
-        results = self.converter.convert_all(data)
-        for result in results:
-            yield self._result_to_doc(result.document)
+        if as_tuples:
+            sources = cast(Iterable[tuple[str | Path | bytes, _AnyContext]], sources)
+            data = (self._get_source(source) for source, _ in sources)
+            contexts = (context for _, context in sources)
+            results = self.converter.convert_all(data)
+            for result, context in zip(results, contexts):
+                yield (self._result_to_doc(result.document), context)
+        else:
+            sources = cast(Iterable[str | Path | bytes], sources)
+            data = (self._get_source(source) for source in sources)
+            results = self.converter.convert_all(data)
+            for result in results:
+                yield self._result_to_doc(result.document)
 
     def _get_source(self, source: str | Path | bytes) -> str | Path | DocumentStream:
         if isinstance(source, (str, Path)):
