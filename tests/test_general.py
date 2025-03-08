@@ -74,6 +74,15 @@ def test_simple_pipe(nlp):
         assert len(doc.spans[layout.attrs.span_group]) == 4
 
 
+def test_simple_pipe_as_tuples(nlp):
+    layout = spaCyLayout(nlp)
+    data = [(PDF_SIMPLE, "pdf"), (DOCX_SIMPLE, "docx")]
+    result = list(layout.pipe(data, as_tuples=True))
+    for doc, _ in result:
+        assert len(doc.spans[layout.attrs.span_group]) == 4
+    assert [context for _, context in result] == ["pdf", "docx"]
+
+
 def test_table(nlp):
     layout = spaCyLayout(nlp)
     doc = layout(PDF_TABLE)

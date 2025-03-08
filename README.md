@@ -205,7 +205,7 @@ doc = layout("./starcraft.pdf")
 
 #### <kbd>method</kbd> `spaCyLayout.pipe`
 
-Process multiple documents and create spaCy [`Doc`](https://spacy.io/api/doc) objects. You should use this method if you're processing larger volumes of documents at scale.
+Process multiple documents and create spaCy [`Doc`](https://spacy.io/api/doc) objects. You should use this method if you're processing larger volumes of documents at scale. The behavior of `as_tuples` works like it does in spaCy's [`Language.pipe`](https://spacy.io/api/language#pipe).
 
 ```python
 layout = spaCyLayout(nlp)
@@ -215,8 +215,9 @@ docs = layout.pipe(paths)
 
 | Argument | Type | Description |
 | --- | --- | --- |
-| `sources` | `Iterable[str \| Path \| bytes]` | Paths of documents to process or bytes. |
-| **YIELDS** | `Doc` | The processed spaCy `Doc` object. |
+| `sources` | `Iterable[str \| Path \| bytes] \| Iterable[tuple[str \| Path \| bytes, Any]]` | Paths of documents to process or bytes, or `(source, context)` tuples if `as_tuples` is set to `True`. |
+| `as_tuples` | `bool` | If set to `True`, inputs should be an iterable of `(source, context)` tuples. Output will then be a sequence of `(doc, context)` tuples. Defaults to `False`. |
+| **YIELDS** | `Doc \| tuple[Doc, Any]` | The processed spaCy `Doc` objects or `(doc, context)` tuples if `as_tuples` is set to `True`. |
 
 ## 💡 Examples and code snippets
 
