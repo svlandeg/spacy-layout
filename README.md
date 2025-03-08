@@ -213,6 +213,12 @@ paths = ["one.pdf", "two.pdf", "three.pdf", ...]
 docs = layout.pipe(paths)
 ```
 
+```python
+sources = [("one.pdf", {"id": 1}), ("two.pdf", {"id": 2})]
+for doc, context in layout.pipe(sources, as_tuples=True):
+    ...
+```
+
 | Argument | Type | Description |
 | --- | --- | --- |
 | `sources` | `Iterable[str \| Path \| bytes] \| Iterable[tuple[str \| Path \| bytes, Any]]` | Paths of documents to process or bytes, or `(source, context)` tuples if `as_tuples` is set to `True`. |
